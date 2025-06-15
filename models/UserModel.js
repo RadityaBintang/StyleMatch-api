@@ -1,0 +1,62 @@
+const db = require('../config/database');
+const bcrypt = require('bcrypt');
+
+const UserModel = {
+  
+  async authenticate(username, password) {
+    try {
+      const [rows] = await db.query(
+        'SELECT id, username, password FROM users WHERE username = ?',
+        [username]
+      );
+
+      const user = rows[0];
+      if (user && await bcrypt.compare(password, user.password)) {
+        return user;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('Error during authentication:', err);
+      throw err;
+    }
+  },
+
+  
+  async usernameExists(username) {
+    try {
+      const [rows] = await db.query(
+        'SELECT COUNT(*) AS count FROM users WHERE username = ?',
+        [username]
+      );
+
+      return rows[0].count > 0;
+    } catch (err) {
+      console.error('Error checking username existence:', err);
+      throw err;
+    }
+  },
+
+ 
+  async create(username, password) {
+    try {
+      if (username.length < 4) {
+        throw new Error('Username must be at least 4 characters');
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const [result] = await db.query(
+        'INSERT INTO users (username, password) VALUES (?, ?)',
+        [username, hashedPassword]
+      );
+
+      return result.insertId; 
+    } catch (err) {
+      console.error('Error creating user:', err);
+      throw err;
+    }
+  }
+};
+
+module.exports = UserModel;

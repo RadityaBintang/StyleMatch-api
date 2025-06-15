@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saved Outfits</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .outfit-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .outfit-card {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .outfit-card img {
+      width: 100px;
+      height: auto;
+      margin: 10px;
+      border-radius: 8px;
+    }
+    .buttons {
+      margin-top: 10px;
+    }
+    .buttons a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: white;
+      background-color: #007BFF;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .buttons a.delete {
+      background-color: #DC3545;
+    }
+    .back-link {
+      margin-bottom: 20px;
+      display: inline-block;
+      font-size: 18px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="border-bottom: 1px solid #ccc; padding: 16px; position: relative;">
+    <a href="main.html" class="back-link">← Kembali</a>
+  </div>
+
+  <h2>Saved Outfits</h2>
+
+  <div id="outfit-container" class="outfit-container"></div>
+
+  <script>
+    async function loadSavedOutfits() {
+      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+      if (!token) {
+        alert('Anda belum login');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/outfit/saved', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+
+        const data = await res.json();
+
+        const container = document.getElementById('outfit-container');
+        container.innerHTML = '';
+
+        if (!Array.isArray(data)) {
+          container.innerHTML = `<p>${data.message || 'Data tidak valid.'}</p>`;
+          return;
+        }
+
+        if (data.length === 0) {
+          container.innerHTML = '<p>Tidak ada outfit tersimpan.</p>';
+          return;
+        }
+
+        data.forEach(outfit => {
+          const card = document.createElement('div');
+          card.className = 'outfit-card';
+
+          const top = outfit.top;
+          const bottom = outfit.bottom;
+
+          card.innerHTML = `
+            <h3>${escapeHTML(outfit.name)}</h3>
+            <p>${escapeHTML(outfit.description)}</p>
+
+            <div>
+              ${top ? `
+                <img src="${top.image_url}" alt="Top">
+                <p><strong>Top:</strong> ${escapeHTML(top.name)}</p>
+              ` : '<p><strong>Top:</strong> Not found</p>'}
+            </div>
+
+            <div>
+              ${bottom ? `
+                <img src="${bottom.image_url}" alt="Bottom">
+                <p><strong>Bottom:</strong> ${escapeHTML(bottom.name)}</p>
+              ` : '<p><strong>Bottom:</strong> Not found</p>'}
+            </div>
+
+            <div class="buttons">
+              <a class="edit" href="#">Edit</a>
+              <a class="delete" data-id="${outfit.id}">Delete</a>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+
+        attachDeleteEvents();
+      } catch (err) {
+        alert('Gagal memuat outfit tersimpan.');
+        console.error(err);
+      }
+    }
+
+    function attachDeleteEvents() {
+      const deleteButtons = document.querySelectorAll('.delete');
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const id = btn.getAttribute('data-id');
+          const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+          if (!token) return;
+
+          if (confirm('Yakin ingin menghapus outfit ini?')) {
+            try {
+              await fetch(`/api/outfit/saved/${id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': 'Bearer ' + token
+                }
+              });
+              loadSavedOutfits(); 
+            } catch (err) {
+              alert('Gagal menghapus outfit.');
+              console.error(err);
+            }
+          }
+        });
+      });
+    }
+
+    function escapeHTML(str) {
+      return String(str).replace(/[&<>"']/g, function (m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+   
+    loadSavedOutfits();
+  </script>
+</body>
+</html>

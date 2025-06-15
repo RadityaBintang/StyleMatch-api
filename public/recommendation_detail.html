@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=480, height=936, initial-scale=1.0" />
+  <title>StyleMatch - Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f9f9f9;
+    }
+    .scroll-container {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+    .detail-box-container {
+      width: calc(100% - 40px);
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen bg-gray-100">
+  <div class="container bg-white w-[480px] h-[936px] shadow-md rounded-lg overflow-hidden relative">
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200 relative">
+      <a href="recommendation.html" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <h1 class="text-xl font-bold text-center">Detail</h1>
+    </div>
+
+    <!-- Content Scroll -->
+    <div class="h-[calc(100%-120px)] overflow-y-auto scroll-container p-4">
+      <div id="detail-content">
+        
+      </div>
+
+      <!-- Others -->
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold mb-2">Others</h3>
+        <div class="flex space-x-3 overflow-x-auto scroll-container pb-2">
+          <div class="flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden">
+            <img src="assets/images/college.jpg" class="w-full h-full object-cover" alt="College">
+          </div>
+          <div class="flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden">
+            <img src="assets/images/casual_look.jpg" class="w-full h-full object-cover" alt="Casual">
+          </div>
+          <div class="flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden">
+            <img src="assets/images/sporty.jpg" class="w-full h-full object-cover" alt="Sporty">
+          </div>
+          <div class="flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden">
+            <img src="assets/images/street_style.jpg" class="w-full h-full object-cover" alt="Street">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--  Buttons -->
+    <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 flex justify-between">
+      <a id="review-link" href="#" class="flex items-center justify-center px-4 py-2 bg-gray-800 text-white rounded-lg">
+        <i class="fas fa-user-friends mr-2"></i> Reviews
+      </a>
+      <button class="flex items-center justify-center px-4 py-2 bg-black text-white rounded-lg">
+        <i class="fas fa-heart mr-2"></i> Favourite
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const detailContainer = document.getElementById('detail-content');
+    const reviewLink = document.getElementById('review-link');
+
+    if (!id) {
+      detailContainer.innerHTML = '<p class="text-center text-gray-500">No outfit ID provided.</p>';
+    } else {
+      fetch(`/api/recommendations/${id}`)
+        .then(res => res.json())
+        .then(res => {
+          if (!res.success) throw new Error(res.message);
+          const outfit = res.data;
+          reviewLink.href = `review.html?id=${outfit.id}`;
+
+          // Generate HTML
+          detailContainer.innerHTML = `
+            <div class="mb-6 detail-box-container">
+             <img src="${outfit.image_url.startsWith('assets') ? '/' + outfit.image_url : '/assets/images/' + outfit.image_url}"
+
+                   alt="${outfit.title}" 
+                   class="w-full h-64 object-cover rounded-lg border-2 border-black" />
+              <div class="mt-2 px-2">
+                <p class="font-bold text-lg">${outfit.title}</p>
+                <div class="flex items-center mt-1 text-sm text-gray-600">
+                  <i class="fas fa-star text-yellow-400 mr-1"></i>
+                  <span>${(outfit.avg_rating || 0).toFixed(1)} (${outfit.likes_count || 0} reviews)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-2 text-gray-800">
+              <p class="text-lg font-medium mb-2">Style: ${outfit.style || 'N/A'}</p>
+              <p class="text-sm leading-relaxed">${outfit.description || 'No description available.'}</p>
+            </div>
+          `;
+        })
+        .catch(err => {
+          detailContainer.innerHTML = `<p class="text-center text-red-500">Failed to load data: ${err.message}</p>`;
+        });
+    }
+  </script>
+</body>
+</html>
