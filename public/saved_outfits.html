@@ -70,7 +70,7 @@
 
   <script>
     async function loadSavedOutfits() {
-      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('Anda belum login');
         window.location.href = 'login.html';

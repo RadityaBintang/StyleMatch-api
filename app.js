@@ -36,11 +36,10 @@ const mainRoutes = require('./routes/mainRoutes');
 app.use('/api/users', userRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/recommendations', recommendationRoutes);
-
 app.use('/api/outfit', outfitRoutes);
 app.use('/api/main', mainRoutes);
 
-console.log('✅ Semua routes sudah dimount');
+console.log(' Semua routes sudah dimount');
 
 //  Root Redirect 
 app.get('/', (req, res) => {
@@ -64,5 +63,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log('🚀 Server berjalan di http://localhost:' + PORT);
+  console.log(' Server berjalan di http://localhost:' + PORT);
 });

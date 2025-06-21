@@ -38,25 +38,7 @@ const UserModel = {
   },
 
  
-  async create(username, password) {
-    try {
-      if (username.length < 4) {
-        throw new Error('Username must be at least 4 characters');
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const [result] = await db.query(
-        'INSERT INTO users (username, password) VALUES (?, ?)',
-        [username, hashedPassword]
-      );
-
-      return result.insertId; 
-    } catch (err) {
-      console.error('Error creating user:', err);
-      throw err;
-    }
-  }
+  
 };
 
 module.exports = UserModel;

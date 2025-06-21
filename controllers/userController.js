@@ -40,23 +40,7 @@ const userController = {
     }
   },
 
-  async register(req, res) {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
-    }
-    try {
-      const exists = await UserModel.usernameExists(username);
-      if (exists) {
-        return res.status(409).json({ message: 'Username already taken' });
-      }
-      const userId = await UserModel.create(username, password);
-      res.status(201).json({ message: 'User created', userId });
-    } catch (err) {
-      console.error('ERROR (userController.js): Register error:', err);
-      res.status(500).json({ message: 'Internal server error during registration' });
-    }
-  },
+ 
 
   logout(req, res) {
     res.json({ message: 'Logged out (client-side only)' });
